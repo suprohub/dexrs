@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::dalvik::{dex::*, error::Result};
 
-use super::{annotation::DexAnnotation, method::DexPrototype, IDexRef};
+use super::{IDexRef, annotation::DexAnnotation, method::DexPrototype};
 
 #[derive(Debug)]
 pub enum DexValue {

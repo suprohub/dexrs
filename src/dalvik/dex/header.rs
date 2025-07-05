@@ -29,7 +29,7 @@ impl Magic {
     pub fn version_num(&self) -> result::Result<UInt, std::num::ParseIntError> {
         // We assume the version is always 3 bytes and ends with a '\0'
         let raw_version = &self.version[..3];
-        return String::from_utf8_lossy(raw_version).parse();
+        String::from_utf8_lossy(raw_version).parse()
     }
 }
 
@@ -51,8 +51,6 @@ pub const SIGNATURE_SIZE: usize = 20;
 
 /// Header item size
 pub const HEADER_SIZE: usize = 0x70;
-
-
 
 /// Header item data structure
 #[binrw]
@@ -183,7 +181,7 @@ impl HeaderItem {
                 return Err(ConstraintError {
                     identifier: "io",
                     description: e.to_string(),
-                })
+                });
             }
         };
 
@@ -259,21 +257,19 @@ impl HeaderItem {
                 return Err(ConstraintError {
                     identifier: "G7",
                     description: format!(
-                        "expected non-zero offset for size {}, got 0 (sec: {})",
-                        v1, name
+                        "expected non-zero offset for size {v1}, got 0 (sec: {name})"
                     ),
                 });
             } else if v1 == 0 && v2 != 0 {
                 return Err(ConstraintError {
                     identifier: "G7",
                     description: format!(
-                        "expected 0 for offset, got non-zero offset {} (sec: {})",
-                        v2, name
+                        "expected 0 for offset, got non-zero offset {v2} (sec: {name})"
                     ),
                 });
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 }

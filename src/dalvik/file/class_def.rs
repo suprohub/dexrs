@@ -4,16 +4,15 @@ use crate::dalvik::{
 };
 
 use binrw::BinRead;
-use byteorder::{LittleEndian, ReadBytesExt};
 use std::{
-    collections::{btree_map::Values, BTreeMap},
+    collections::{BTreeMap, btree_map::Values},
     fmt::Debug,
     io::{Read, Seek},
     rc::Rc,
 };
 
 use super::{
-    annotation::DexAnnotation, field::DexField, lazy_file::Dex, method::*, DexValue, IDex,
+    DexValue, IDex, annotation::DexAnnotation, field::DexField, lazy_file::Dex, method::*,
 };
 
 #[derive(Debug)]
@@ -314,7 +313,12 @@ macro_rules! _at {
 
 /* public API */
 impl DexClassDef {
-    _at!(get_method_mut, direct_methods, virtual_methods, mut DexMethod);
+    _at!(
+        get_method_mut,
+        direct_methods,
+        virtual_methods,
+        mut DexMethod
+    );
     _at!(get_field_mut, static_fields, instance_fields, mut DexField);
     _at!(get_direct_method, direct_methods, DexMethod);
     _at!(get_virtual_method, virtual_methods, DexMethod);
@@ -344,13 +348,6 @@ impl DexClassDef {
     }
 
     pub fn get_fields(&self) -> impl Iterator<Item = (&u32, &DexField)> {
-        self.static_fields
-            .iter()
-            .chain(self.instance_fields.iter())
+        self.static_fields.iter().chain(self.instance_fields.iter())
     }
 }
-
-
-
-
-

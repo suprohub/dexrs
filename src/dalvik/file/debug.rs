@@ -9,7 +9,7 @@ use binrw::BinRead;
 use crate::dalvik::{
     dex::*,
     error::{Error, Result},
-    file::{method::DexPrototype, Dex, IDex},
+    file::{Dex, IDex, method::DexPrototype},
 };
 
 #[derive(Debug)]

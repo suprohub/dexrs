@@ -1,11 +1,11 @@
 use crate::dalvik::dex::{
-    AccessFlags, AnnotationSetRefList, CodeItem, DebugInfoItem, DexType, EncodedMethod, SLeb128, ULeb128, ULeb128p1
+    AccessFlags, AnnotationSetRefList, CodeItem, DebugInfoItem, DexType, EncodedMethod, ULeb128p1,
 };
 use crate::dalvik::error::Result;
 use crate::dalvik::insns::{self, Insn};
 
 use super::annotation::DexAnnotation;
-use super::{debug::DebugInfo, Dex, IDex, IDexRef};
+use super::{Dex, IDex, IDexRef, debug::DebugInfo};
 use binrw::BinRead;
 use std::io::{Read, Seek};
 use std::rc::Rc;

@@ -5,13 +5,13 @@ use crate::dalvik::{
 
 use binrw::BinRead;
 use std::{
-    collections::{btree_map::Entry::Vacant, BTreeMap},
+    collections::{BTreeMap, btree_map::Entry::Vacant},
     fmt::Debug,
     io::{self, Read, Seek},
     rc::Rc,
 };
 
-use super::{method::DexPrototype, DexClassDef, IDex};
+use super::{DexClassDef, IDex, method::DexPrototype};
 
 type Pool<T> = BTreeMap<u32, Rc<T>>;
 

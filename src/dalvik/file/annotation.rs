@@ -4,7 +4,7 @@ use crate::dalvik::dex::{
 use crate::dalvik::error::Result;
 
 use super::{Dex, DexValue, IDexRef};
-use binrw::{io, BinRead};
+use binrw::{BinRead, io};
 use std::collections::HashMap;
 use std::io::{Read, Seek};
 use std::rc::Rc;

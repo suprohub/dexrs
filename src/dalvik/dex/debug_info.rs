@@ -127,5 +127,3 @@ impl DebugInfoItem {
     /// the number of line increments represented
     pub const DBG_LINE_RANGE: UByte = 15;
 }
-
-

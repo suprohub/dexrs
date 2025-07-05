@@ -119,13 +119,13 @@ impl BinRead for SLeb128 {
         _: Self::Args<'_>,
     ) -> result::Result<Self, binrw::Error> {
         // simply delegate to leb128
-        return match leb128::read::signed(reader) {
+        match leb128::read::signed(reader) {
             Ok(x) => Ok(Self(x as i32)),
             Err(e) => Err(binrw::Error::Io(io::Error::new(
                 io::ErrorKind::InvalidData,
                 e,
             ))),
-        };
+        }
     }
 }
 
@@ -144,13 +144,13 @@ impl BinWrite for SLeb128 {
         _: Self::Args<'_>,
     ) -> result::Result<(), binrw::Error> {
         // simply delegate to leb128
-        return match leb128::write::signed(writer, self.0 as i64) {
+        match leb128::write::signed(writer, self.0 as i64) {
             Ok(_) => Ok(()),
             Err(e) => Err(binrw::Error::Io(io::Error::new(
                 io::ErrorKind::InvalidData,
                 e,
             ))),
-        };
+        }
     }
 }
 
@@ -172,13 +172,13 @@ impl BinRead for ULeb128 {
         _: Self::Args<'_>,
     ) -> result::Result<Self, binrw::Error> {
         // simply delegate to leb128
-        return match leb128::read::unsigned(reader) {
+        match leb128::read::unsigned(reader) {
             Ok(x) => Ok(Self(x as u32)),
             Err(e) => Err(binrw::Error::Io(io::Error::new(
                 io::ErrorKind::InvalidData,
                 e,
             ))),
-        };
+        }
     }
 }
 
@@ -193,13 +193,13 @@ impl BinWrite for ULeb128 {
         _: Self::Args<'_>,
     ) -> result::Result<(), binrw::Error> {
         // simply delegate to leb128
-        return match leb128::write::unsigned(writer, self.0 as u64) {
+        match leb128::write::unsigned(writer, self.0 as u64) {
             Ok(_) => Ok(()),
             Err(e) => Err(binrw::Error::Io(io::Error::new(
                 io::ErrorKind::InvalidData,
                 e,
             ))),
-        };
+        }
     }
 }
 
@@ -227,7 +227,7 @@ impl BinRead for ULeb128p1 {
         _: Self::Args<'_>,
     ) -> result::Result<Self, binrw::Error> {
         // simply delegate to leb128
-        return match leb128::read::unsigned(reader) {
+        match leb128::read::unsigned(reader) {
             Ok(x) => match x {
                 0 => Ok(Self::Neg),
                 _ => Ok(Self::Pos((x - 1) as u32)),
@@ -236,11 +236,9 @@ impl BinRead for ULeb128p1 {
                 io::ErrorKind::InvalidData,
                 e,
             ))),
-        };
+        }
     }
 }
-
-
 
 impl BinWrite for ULeb128p1 {
     type Args<'a> = ();
@@ -271,11 +269,8 @@ impl BinWrite for ULeb128p1 {
     }
 }
 
-
-
 pub mod mutf8 {
     use std::io::{self, Read, Seek};
-
 
     /// # Modified UTF-8 encoding
     ///
@@ -354,13 +349,13 @@ pub mod mutf8 {
                 _ => {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
-                        format!("Bad character: {:#x}", byte),
+                        format!("Bad character: {byte:#x}"),
                     ));
                 }
             };
             out.push(out_val);
             k -= 1;
         }
-        return Ok(String::from_utf16_lossy(out.as_ref()));
+        Ok(String::from_utf16_lossy(out.as_ref()))
     }
 }

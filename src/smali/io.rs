@@ -3,11 +3,11 @@ use std::rc::Rc;
 
 use crate::dalvik::dex::{AccessFlags, DexType, FieldIdItem, MethodIdItem};
 use crate::dalvik::error::Result;
+use crate::dalvik::file::DexClassDef;
 use crate::dalvik::file::annotation::DexAnnotation;
 use crate::dalvik::file::field::DexField;
 use crate::dalvik::file::method::DexMethod;
-use crate::dalvik::file::DexClassDef;
-use crate::dalvik::file::{method::DexPrototype, DexValue, IDexRef};
+use crate::dalvik::file::{DexValue, IDexRef, method::DexPrototype};
 use crate::dalvik::insns::{self, Index, Insn, InsnFormat, Payload};
 
 // A small hack to implement write_* operations for all
@@ -22,7 +22,7 @@ pub trait SmaliWrite: Write {
         access_flags
             .iter_names()
             .map(|(x, _)| x.to_lowercase())
-            .try_for_each(|f| write!(self, "{} ", f))?;
+            .try_for_each(|f| write!(self, "{f} "))?;
         Ok(())
     }
 
@@ -40,7 +40,7 @@ pub trait SmaliWrite: Write {
         let name = dex.get_string(ref_.name_idx)?;
         let type_ = dex.get_type(ref_.type_idx as u32)?;
         self.write_type(&class)?;
-        write!(self, "->{}:", name)?;
+        write!(self, "->{name}:")?;
         self.write_type(&type_)?;
         Ok(())
     }
@@ -51,7 +51,7 @@ pub trait SmaliWrite: Write {
         let name = dex.get_string(ref_.name_idx)?;
         let type_ = dex.get_proto(ref_.proto_idx as u32)?;
         self.write_type(&class)?;
-        write!(self, "->{}", name)?;
+        write!(self, "->{name}")?;
         self.write_proto(&type_)?;
         Ok(())
     }
@@ -74,10 +74,10 @@ pub trait SmaliWrite: Write {
             DexValue::FieldRef(v) => self.write_field_ref(v, dex)?,
             DexValue::MethodRef(.., v) => self.write_method_ref(v, dex)?,
             DexValue::MethodType(v) => self.write_proto(v)?,
-            DexValue::Int(v) => write!(self, "{:#x}", v)?,
-            DexValue::Float(v) => write!(self, "{}", v)?,
-            DexValue::Long(v) => write!(self, "{:#x}", v)?,
-            DexValue::Double(v) => write!(self, "{}", v)?,
+            DexValue::Int(v) => write!(self, "{v:#x}")?,
+            DexValue::Float(v) => write!(self, "{v}")?,
+            DexValue::Long(v) => write!(self, "{v:#x}")?,
+            DexValue::Double(v) => write!(self, "{v}")?,
             DexValue::True => write!(self, "true")?,
             DexValue::False => write!(self, "false")?,
             DexValue::Null => write!(self, "null")?,
@@ -91,22 +91,22 @@ pub trait SmaliWrite: Write {
                 }
                 write!(self, "]")?;
             }
-            DexValue::Data(v, _) => write!(self, "<data={}>", v)?,
+            DexValue::Data(v, _) => write!(self, "<data={v}>")?,
             DexValue::Char(v) => write!(self, "'{}'", v.escape_default())?,
-            DexValue::Short(v) => write!(self, "{:#x}", v)?,
-            DexValue::Byte(v) => write!(self, "{:#x}", v)?,
+            DexValue::Short(v) => write!(self, "{v:#x}")?,
+            DexValue::Byte(v) => write!(self, "{v:#x}")?,
             // DexValue::Annotation(v) => self.w,
             DexValue::Enum(v) => {
                 self.write_field_ref(v, dex)?;
             }
-            _ => write!(self, "{:?}", value)?,
+            _ => write!(self, "{value:?}")?,
         }
         Ok(())
     }
 
     fn write_index(&mut self, index: &Index, dex: IDexRef<'_>) -> Result<()> {
         match index {
-            Index::Literal(a) => write!(self, "{:#x}", a)?,
+            Index::Literal(a) => write!(self, "{a:#x}")?,
             Index::Field(a) => {
                 self.write_field_ref(a, dex)?;
             }
@@ -119,14 +119,14 @@ pub trait SmaliWrite: Write {
             }
             Index::Type(a) => {
                 // type_name:field_type
-                write!(self, "{}", a)?;
+                write!(self, "{a}")?;
             }
             Index::String(a) => {
                 write!(self, "\"{}\"", a.escape_default())?;
             }
             _ => {
                 // TODO
-                write!(self, "{:?}", index)?;
+                write!(self, "{index:?}")?;
             }
         }
         Ok(())
@@ -134,30 +134,30 @@ pub trait SmaliWrite: Write {
 
     fn write_insn(&mut self, insn: &Insn, dex: IDexRef<'_>, indent: usize) -> Result<()> {
         let indent_val = "    ".repeat(indent);
-        write!(self, "{}", indent_val)?;
+        write!(self, "{indent_val}")?;
         if let Some(payload) = &insn.payload {
             let indent2 = "    ".repeat(indent + 1);
             match payload {
                 Payload::FillArrayData(data) => {
                     write!(self, ".array-data {:#x} {:#x}", data.width, data.size)?;
                     for v in data.data.iter() {
-                        writeln!(self, "{}{:#x}", indent2, v)?;
+                        writeln!(self, "{indent2}{v:#x}")?;
                     }
                     write!(self, ".end array-data")?;
                 }
                 Payload::PackedSwitch(pswitch) => {
                     writeln!(self, ".packed-switch {:#x}", pswitch.first_key)?;
                     for v in pswitch.targets.iter() {
-                        writeln!(self, "{}{:#x}", indent2, v)?;
+                        writeln!(self, "{indent2}{v:#x}")?;
                     }
-                    writeln!(self, "{}.end packed-switch", indent_val)?;
+                    writeln!(self, "{indent_val}.end packed-switch")?;
                 }
                 Payload::SparseSwitch(switch) => {
                     writeln!(self, ".sparse-switch")?;
                     for (key, target) in switch.keys.iter().zip(switch.targets.iter()) {
-                        write!(self, "{}{:#x} -> {:#x}", indent2, key, target)?;
+                        write!(self, "{indent2}{key:#x} -> {target:#x}")?;
                     }
-                    writeln!(self, "{}.end sparse-switch", indent_val)?;
+                    writeln!(self, "{indent_val}.end sparse-switch")?;
                 }
             }
             Ok(())
@@ -174,71 +174,71 @@ pub trait SmaliWrite: Write {
                 InsnFormat::Format10x => { /* op */ }
 
                 InsnFormat::Format12x { a, b } => {
-                    write!(self, "v{}, v{}", a, b)?; // op vA, vB
+                    write!(self, "v{a}, v{b}")?; // op vA, vB
                 }
                 InsnFormat::Format11n { a, b } => {
-                    write!(self, "v{}, {:?}", a, b)?; // op vA, #+B
+                    write!(self, "v{a}, {b:?}")?; // op vA, #+B
                 }
                 InsnFormat::Format11x { a } => {
-                    write!(self, "v{}", a)?; // op vAA
+                    write!(self, "v{a}")?; // op vAA
                 }
                 InsnFormat::Format10t { a } => {
-                    write!(self, "{}", a)?; // op +AA
+                    write!(self, "{a}")?; // op +AA
                 }
                 InsnFormat::Format20t { a } => {
-                    write!(self, "{}", a)?; // op +AAAA
+                    write!(self, "{a}")?; // op +AAAA
                 }
                 InsnFormat::Format22x { a, b } => {
-                    write!(self, "v{}, v{}", a, b)?; // op vAA, vBBBB
+                    write!(self, "v{a}, v{b}")?; // op vAA, vBBBB
                 }
                 InsnFormat::Format21t { a, b } => {
-                    write!(self, "v{}, {}", a, b)?; // op vAA, +BBBB
+                    write!(self, "v{a}, {b}")?; // op vAA, +BBBB
                 }
                 InsnFormat::Format21s { a, b } => {
-                    write!(self, "v{}, ", a)?; // op vAA, +BBBB
+                    write!(self, "v{a}, ")?; // op vAA, +BBBB
                     self.write_index(b, dex)?;
                 }
                 InsnFormat::Format21h { a, b } => {
-                    write!(self, "v{}, ", a)?; // op vAA, +BBBB0000
+                    write!(self, "v{a}, ")?; // op vAA, +BBBB0000
                     self.write_index(b, dex)?;
                 }
                 InsnFormat::Format21c { a, b } => {
-                    write!(self, "v{}, ", a)?; // op vAA, kind@BBBB
+                    write!(self, "v{a}, ")?; // op vAA, kind@BBBB
                     self.write_index(b, dex)?;
                 }
                 InsnFormat::Format23x { a, b, c } => {
-                    write!(self, "v{}, v{}, v{}", a, b, c)?; // op vAA, vBB, vCC
+                    write!(self, "v{a}, v{b}, v{c}")?; // op vAA, vBB, vCC
                 }
                 InsnFormat::Format22b { a, b, c } => {
-                    write!(self, "v{}, v{}, ", a, b)?; // op vAA, vBB, #+CC
+                    write!(self, "v{a}, v{b}, ")?; // op vAA, vBB, #+CC
                     self.write_index(c, dex)?;
                 }
                 InsnFormat::Format22t { a, b, c } => {
-                    write!(self, "v{}, v{}, {}", a, b, c)?; // op vAA, vBB, +CCCC
+                    write!(self, "v{a}, v{b}, {c}")?; // op vAA, vBB, +CCCC
                 }
                 InsnFormat::Format22s { a, b, c } => {
-                    write!(self, "v{}, v{}, ", a, b)?; // op vAA, vBB, +CCCC
+                    write!(self, "v{a}, v{b}, ")?; // op vAA, vBB, +CCCC
                     self.write_index(c, dex)?;
                 }
                 InsnFormat::Format22c { a, b, c } => {
-                    write!(self, "v{}, v{}, ", a, b)?; // op vAA, vBB, kind@CCCC
+                    write!(self, "v{a}, v{b}, ")?; // op vAA, vBB, kind@CCCC
                     self.write_index(c, dex)?;
                 }
                 InsnFormat::Format30t { a } => {
-                    write!(self, "{}", a)?; // op +AAAAAAAA
+                    write!(self, "{a}")?; // op +AAAAAAAA
                 }
                 InsnFormat::Format32x { a, b } => {
-                    write!(self, "v{}, v{}", a, b)?; // op vAAAA, vBBBB
+                    write!(self, "v{a}, v{b}")?; // op vAAAA, vBBBB
                 }
                 InsnFormat::Format31i { a, b } => {
-                    write!(self, "v{}, ", a)?; // op vAA, #+BBBBBBBB
+                    write!(self, "v{a}, ")?; // op vAA, #+BBBBBBBB
                     self.write_index(b, dex)?;
                 }
                 InsnFormat::Format31t { a, b } => {
-                    write!(self, "v{}, {}", a, b)?; // op vAAAA, +BBBB
+                    write!(self, "v{a}, {b}")?; // op vAAAA, +BBBB
                 }
                 InsnFormat::Format31c { a, b } => {
-                    write!(self, "v{}, ", a)?; // op vAAAA, kind@BBBB
+                    write!(self, "v{a}, ")?; // op vAAAA, kind@BBBB
                     self.write_index(b, dex)?;
                 }
 
@@ -254,11 +254,11 @@ pub trait SmaliWrite: Write {
                     // [A=n] op {vX...vN}, kind@BBBB
                     write!(self, "{{")?;
                     match a {
-                        1 => write!(self, "v{}", c)?,
-                        2 => write!(self, "v{}, v{}", c, d)?,
-                        3 => write!(self, "v{}, v{}, v{}", c, d, e)?,
-                        4 => write!(self, "v{}, v{}, v{}, v{}", c, d, e, f)?,
-                        5 => write!(self, "v{}, v{}, v{}, v{}, v{}", c, d, e, f, g)?,
+                        1 => write!(self, "v{c}")?,
+                        2 => write!(self, "v{c}, v{d}")?,
+                        3 => write!(self, "v{c}, v{d}, v{e}")?,
+                        4 => write!(self, "v{c}, v{d}, v{e}, v{f}")?,
+                        5 => write!(self, "v{c}, v{d}, v{e}, v{f}, v{g}")?,
                         _ => {}
                     }
                     write!(self, "}}, ")?;
@@ -274,7 +274,7 @@ pub trait SmaliWrite: Write {
                     // [A=n] op {vX...vN}, kind@BBBB
                     write!(self, "{{")?;
                     for i in regs.start..regs.end {
-                        write!(self, "v{}", i)?;
+                        write!(self, "v{i}")?;
                         if i != regs.end {
                             write!(self, ", ")?;
                         }
@@ -296,11 +296,11 @@ pub trait SmaliWrite: Write {
                     // [A=n] op {vX...vN}, kind@BBBB, proto@HHHH
                     write!(self, "{{")?;
                     match a {
-                        1 => write!(self, "v{}", c)?,
-                        2 => write!(self, "v{}, v{}", c, d)?,
-                        3 => write!(self, "v{}, v{}, v{}", c, d, e)?,
-                        4 => write!(self, "v{}, v{}, v{}, v{}", c, d, e, f)?,
-                        5 => write!(self, "v{}, v{}, v{}, v{}, v{}", c, d, e, f, g)?,
+                        1 => write!(self, "v{c}")?,
+                        2 => write!(self, "v{c}, v{d}")?,
+                        3 => write!(self, "v{c}, v{d}, v{e}")?,
+                        4 => write!(self, "v{c}, v{d}, v{e}, v{f}")?,
+                        5 => write!(self, "v{c}, v{d}, v{e}, v{f}, v{g}")?,
                         _ => {}
                     }
                     write!(self, "}}, ")?;
@@ -319,7 +319,7 @@ pub trait SmaliWrite: Write {
                     // [A=n] op {vX...vN}, kind@BBBB, proto@HHHH
                     write!(self, "{{")?;
                     for i in regs.start..regs.end {
-                        write!(self, "v{}", i)?;
+                        write!(self, "v{i}")?;
                         if i != regs.end {
                             write!(self, ", ")?;
                         }
@@ -331,7 +331,7 @@ pub trait SmaliWrite: Write {
                 }
 
                 InsnFormat::Format51l { a, b } => {
-                    write!(self, "v{}, ", a)?; // op vAA, +BBBBBBBB
+                    write!(self, "v{a}, ")?; // op vAA, +BBBBBBBB
                     self.write_index(b, dex)?;
                 }
 
@@ -356,14 +356,14 @@ pub trait SmaliWrite: Write {
     ) -> Result<()> {
         let indent_val = "    ".repeat(indent);
         if is_sub {
-            write!(self, "{}.subannotation ", indent_val)?;
+            write!(self, "{indent_val}.subannotation ")?;
         } else {
-            write!(self, "{}.annotation ", indent_val)?;
+            write!(self, "{indent_val}.annotation ")?;
         }
 
         // <visibility> <type>
         if let Some(visibility) = &annotation.visibility {
-            write!(self, "{} ", format!("{:?}", visibility).to_lowercase())?;
+            write!(self, "{} ", format!("{visibility:?}").to_lowercase())?;
         }
         self.write_type(&annotation.type_)?;
 
@@ -371,7 +371,7 @@ pub trait SmaliWrite: Write {
         if !annotation.values.is_empty() {
             let indent2 = "    ".repeat(indent + 1);
             for (key, value) in annotation.values.iter() {
-                write!(self, "\n{}{} = ", indent2, key)?;
+                write!(self, "\n{indent2}{key} = ")?;
                 match value {
                     //  let us format annotations with sub-annotations
                     DexValue::Annotation(a) => self.write_annotation(a, dex, indent + 2, true)?,
@@ -379,13 +379,13 @@ pub trait SmaliWrite: Write {
                         writeln!(self, "[")?;
                         let indent3 = "    ".repeat(indent + 2);
                         for (i, v) in a.iter().enumerate() {
-                            write!(self, "{}", indent3)?;
+                            write!(self, "{indent3}")?;
                             self.write_value(v, dex)?;
                             if i != a.len() - 1 {
                                 writeln!(self, ",")?;
                             }
                         }
-                        write!(self, "\n{}]", indent2)?;
+                        write!(self, "\n{indent2}]")?;
                     }
                     _ => self.write_value(value, dex)?,
                 }
@@ -393,9 +393,9 @@ pub trait SmaliWrite: Write {
         }
 
         if is_sub {
-            write!(self, "\n{}.end subannotation", indent_val)?;
+            write!(self, "\n{indent_val}.end subannotation")?;
         } else {
-            write!(self, "\n{}.end annotation", indent_val)?;
+            write!(self, "\n{indent_val}.end annotation")?;
         }
 
         Ok(())
@@ -449,7 +449,7 @@ pub trait SmaliWrite: Write {
                 write!(self, "\n{:#06x}:\n", instruction.range.start)?;
                 if let Some(debug) = &method.debug_info {
                     if let Some(line) = debug.lines.get(&(instruction.range.start as u32)) {
-                        writeln!(self, "{}.line {}", indent, line)?;
+                        writeln!(self, "{indent}.line {line}")?;
                     }
                 }
                 self.write_insn(&instruction, dex, 1)?;

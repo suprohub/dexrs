@@ -1,7 +1,7 @@
 use super::encoded_value::{EncodedField, EncodedMethod};
-use super::{types::*, EncodedCatchHandlerList};
+use super::{EncodedCatchHandlerList, types::*};
 use binrw::meta::{EndianKind, ReadEndian};
-use binrw::{binrw, BinRead, Endian};
+use binrw::{BinRead, Endian, binrw};
 use std::io;
 
 /// A string identifier item stores the offset from the start of the file

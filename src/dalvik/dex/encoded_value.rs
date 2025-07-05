@@ -1,5 +1,5 @@
 use super::types::*;
-use binrw::{binrw, BinRead, BinWrite, Endian};
+use binrw::{BinRead, BinWrite, Endian, binrw};
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::{
     ffi::{c_double, c_float},
@@ -171,7 +171,7 @@ impl BinRead for EncodedValue {
     ) -> binrw::BinResult<Self> {
         let byte = reader.read_u8()?;
 
-        let value_type = byte & 0x1F_u8 as u8;
+        let value_type = byte & 0x1F_u8;
         let value_size = ((byte & 0xE0) >> 5) as usize + 1;
 
         // return Ok(EncodedValue::Data(byte, data));
@@ -233,12 +233,9 @@ impl BinRead for EncodedValue {
                     EncodedValue::True
                 }
             }
-            _ => panic!(
-                "Unknown value type: {} with original byte {}",
-                value_type, byte
-            ),
+            _ => panic!("Unknown value type: {value_type} with original byte {byte}"),
         };
-        return Ok(value);
+        Ok(value)
     }
 }
 
@@ -313,7 +310,6 @@ pub struct EncodedCatchHandler {
 pub struct EncodedCatchHandlerList {
     /// the number of entries in this list
     pub size: ULeb128,
-
     // elements of this list
     // #[br(count = size.0 as usize)]
     // pub list: Vec<EncodedCatchHandler>,

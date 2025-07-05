@@ -24,17 +24,14 @@ use super::dex::{
     CallSiteIdItem, CodeItem, DexType, FieldIdItem, FillArrayData, MethodHandleItem, MethodIdItem,
     PackedSwitch, SparseSwitch,
 };
-use crate::dalvik::file::{method::DexPrototype, IDexRef};
+use crate::dalvik::file::{IDexRef, method::DexPrototype};
 
 // The function below is important:
 pub fn disasm(item: &CodeItem, dex: IDexRef<'_>) -> Result<Vec<Insn>> {
     let mut insns = Vec::new();
     let mut cursor = Cursor::new(item.insns.as_ref());
     // 1. Fetch information for the next opcode
-    while let Some(raw_opcode) = match cursor.read_u16::<LittleEndian>() {
-        Ok(raw_opcode) => Some(raw_opcode),
-        Err(_) => None,
-    } {
+    while let Ok(raw_opcode) = cursor.read_u16::<LittleEndian>() {
         // 2. Decode the opcode and its representation
         let opcode = &OPCODES[(raw_opcode & 0xFF) as usize];
         let start = (cursor.position() - 2) as usize;
@@ -52,8 +49,7 @@ pub fn disasm(item: &CodeItem, dex: IDexRef<'_>) -> Result<Vec<Insn>> {
             Ok(format) => format,
             Err(e) => {
                 return Err(super::error::Error::InvalidData(format!(
-                    "failed to parse instruction: {:?} at {:?}",
-                    e, opcode
+                    "failed to parse instruction: {e:?} at {opcode:?}"
                 )));
             }
         };
@@ -1114,15 +1110,15 @@ pub fn fill_array_data(code: &mut Cursor<&'_ [u8]>, insn: &mut Insn) -> Result<(
 impl Debug for Index {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Index::Unknown(x) => write!(f, "<unresolved>{:#x}", x),
-            Index::String(x) => write!(f, "{}", x),
-            Index::Type(x) => write!(f, "{:?}", x),
-            Index::Field(x) => write!(f, "{:?}", x),
-            Index::Method(x) => write!(f, "{:?}", x),
-            Index::MethodHandle(x) => write!(f, "{:?}", x),
-            Index::Proto(x) => write!(f, "{:?}", x),
-            Index::CallSite(x) => write!(f, "{:?}", x),
-            Index::Literal(x) => write!(f, "{:#x}", x),
+            Index::Unknown(x) => write!(f, "<unresolved>{x:#x}"),
+            Index::String(x) => write!(f, "{x}"),
+            Index::Type(x) => write!(f, "{x:?}"),
+            Index::Field(x) => write!(f, "{x:?}"),
+            Index::Method(x) => write!(f, "{x:?}"),
+            Index::MethodHandle(x) => write!(f, "{x:?}"),
+            Index::Proto(x) => write!(f, "{x:?}"),
+            Index::CallSite(x) => write!(f, "{x:?}"),
+            Index::Literal(x) => write!(f, "{x:#x}"),
         }
     }
 }

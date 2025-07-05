@@ -28,25 +28,19 @@ impl DexType {
         }
         match *chars.peek()? {
             // primitive types
-            'V' | 'Z' | 'C' | 'B' | 'S' | 'I' | 'F' | 'J' | 'D' => {
-                Some(DexType {
-                    descriptor: descriptor[i..].to_string(),
-                    dim: i,
-                    primitive: true,
-                })
-            }
+            'V' | 'Z' | 'C' | 'B' | 'S' | 'I' | 'F' | 'J' | 'D' => Some(DexType {
+                descriptor: descriptor[i..].to_string(),
+                dim: i,
+                primitive: true,
+            }),
             // REVISIT:
             // resolve the class type descriptor directly
-            'L' => {
-                Some(DexType {
-                    descriptor: descriptor[i..].to_string(),
-                    dim: i,
-                    primitive: false,
-                })
-            }
-            _ => {
-                None
-            }
+            'L' => Some(DexType {
+                descriptor: descriptor[i..].to_string(),
+                dim: i,
+                primitive: false,
+            }),
+            _ => None,
         }
     }
 
@@ -65,28 +59,21 @@ impl DexType {
         }
         match *chars.peek().unwrap() {
             // primitive types
-            'V' | 'Z' | 'C' | 'B' | 'S' | 'I' | 'F' | 'J' | 'D' => {
-                Ok(DexType {
-                    descriptor: descriptor[i..].to_string(),
-                    dim: i,
-                    primitive: true,
-                })
-            }
+            'V' | 'Z' | 'C' | 'B' | 'S' | 'I' | 'F' | 'J' | 'D' => Ok(DexType {
+                descriptor: descriptor[i..].to_string(),
+                dim: i,
+                primitive: true,
+            }),
             // REVISIT:
             // resolve the class type descriptor directly
-            'L' => {
-                Ok(DexType {
-                    descriptor: descriptor[i..].to_string(),
-                    dim: i,
-                    primitive: false,
-                })
-            }
-            _ => {
-                Err(Error::MalformedDescriptor(format!(
-                    "Invalid type descriptor: {}",
-                    descriptor
-                )))
-            }
+            'L' => Ok(DexType {
+                descriptor: descriptor[i..].to_string(),
+                dim: i,
+                primitive: false,
+            }),
+            _ => Err(Error::MalformedDescriptor(format!(
+                "Invalid type descriptor: {descriptor}"
+            ))),
         }
     }
 }
