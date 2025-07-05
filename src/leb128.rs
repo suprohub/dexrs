@@ -1,5 +1,5 @@
-use varint_simd; // encode/decode unsigned
-use leb128fmt; // encode/decode signed
+use leb128fmt;
+use varint_simd; // encode/decode unsigned // encode/decode signed
 
 use crate::Result;
 

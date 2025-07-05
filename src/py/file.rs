@@ -23,9 +23,9 @@ pub enum PyVerifyPreset {
     NONE = 3,
 }
 
-impl Into<VerifyPreset> for PyVerifyPreset {
-    fn into(self) -> VerifyPreset {
-        match self {
+impl From<PyVerifyPreset> for VerifyPreset {
+    fn from(val: PyVerifyPreset) -> Self {
+        match val {
             PyVerifyPreset::ALL => VerifyPreset::All,
             PyVerifyPreset::CHECKSUM_ONLY => VerifyPreset::ChecksumOnly,
             PyVerifyPreset::NONE => VerifyPreset::None,
@@ -397,7 +397,7 @@ impl PyDexFileImpl {
         let code_item_accessor = &ca.try_borrow(py)?.inner.0;
         Ok(
             dex_action_impl!(self, get_try_items(code_item_accessor)?, py)
-                .into_iter()
+                .iter()
                 .map(Into::into)
                 .collect::<Vec<PyDexTryItem>>(),
         )

@@ -90,7 +90,7 @@ impl<'a, C: DexContainer<'a>> DexFile<'a, C> {
     pub fn pretty_utf16_at(&self, idx: u32) -> String {
         match self.get_string_id(idx) {
             Ok(str_data) => self.pretty_utf16(str_data),
-            Err(_) => format!("<<invalid-string-idx-{}>>", idx),
+            Err(_) => format!("<<invalid-string-idx-{idx}>>"),
         }
     }
 
@@ -318,7 +318,7 @@ impl<'a> Instruction<'a> {
                 let args_str = var_args
                     .arg
                     .iter()
-                    .map(|reg| format!("v{}", reg))
+                    .map(|reg| format!("v{reg}"))
                     .collect::<Vec<String>>()
                     .join(", ");
                 let index = vreg::B(self)? as u32;
@@ -345,10 +345,10 @@ impl<'a> Instruction<'a> {
                         )
                     }
                     (_, Code::INVOKE_CUSTOM) => {
-                        format!("{opcode} {{{args_str}}}, // call_site@{}", index)
+                        format!("{opcode} {{{args_str}}}, // call_site@{index}")
                     }
                     _ => {
-                        format!("{opcode} {{{args_str}}}, thing@{}", index,)
+                        format!("{opcode} {{{args_str}}}, thing@{index}",)
                     }
                 }
             }
@@ -395,7 +395,7 @@ impl<'a> Instruction<'a> {
                 let args_str = var_args
                     .arg
                     .iter()
-                    .map(|reg| format!("v{}", reg))
+                    .map(|reg| format!("v{reg}"))
                     .collect::<Vec<String>>()
                     .join(", ");
                 let method_idx = vreg::B(self)? as u32;
@@ -409,10 +409,7 @@ impl<'a> Instruction<'a> {
                         proto_idx
                     )
                 } else {
-                    format!(
-                        "{opcode} {{{args_str}}}, method@{}, proto@{}",
-                        method_idx, proto_idx
-                    )
+                    format!("{opcode} {{{args_str}}}, method@{method_idx}, proto@{proto_idx}")
                 }
             }
             Format::k4rcc => {

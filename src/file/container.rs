@@ -210,7 +210,7 @@ pub struct PyFileDexContainer {
 impl AsRef<[u8]> for PyFileDexContainer {
     #[inline]
     fn as_ref(&self) -> &[u8] {
-        &self.data.as_ref()
+        self.data.as_ref()
     }
 }
 
@@ -219,7 +219,7 @@ impl Deref for PyFileDexContainer {
     type Target = [u8];
 
     fn deref(&self) -> &Self::Target {
-        &self.data.deref()
+        self.data.deref()
     }
 }
 

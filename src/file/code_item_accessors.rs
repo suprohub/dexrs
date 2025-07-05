@@ -305,7 +305,7 @@ impl<'a> EncodedCatchHandlerIterator<'a> {
     pub fn new(data: &'a [u8]) -> Result<Self> {
         let mut pos = 0;
         let remaining = leb128::decode_sleb128(data, &mut pos)?;
-        println!("remaining: {}", remaining);
+        println!("remaining: {remaining}");
         Ok(Self {
             data,
             offset: pos,

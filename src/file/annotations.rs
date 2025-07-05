@@ -3,18 +3,15 @@ use std::sync::Arc;
 
 #[cfg(feature = "python")]
 use crate::{
-    file::{
-        PyDexFieldAnnotationsItem, PyDexMethodAnnotationsItem,
-        PyDexParameterAnnotationsItem,
-    },
+    file::{PyDexFieldAnnotationsItem, PyDexMethodAnnotationsItem, PyDexParameterAnnotationsItem},
     py::rs_type_wrapper,
 };
 
 use crate::{dex_err, error::DexError, leb128::decode_leb128, Result};
 
 use super::{
-    AnnotationElement, AnnotationItem, AnnotationSetItem, AnnotationsDirectoryItem,
-    DexContainer, DexFile, EncodedAnnotation, EncodedArray, EncodedValue, FieldAnnotationsItem,
+    AnnotationElement, AnnotationItem, AnnotationSetItem, AnnotationsDirectoryItem, DexContainer,
+    DexFile, EncodedAnnotation, EncodedArray, EncodedValue, FieldAnnotationsItem,
     MethodAnnotationsItem, ParameterAnnotationsItem,
 };
 

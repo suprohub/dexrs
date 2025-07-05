@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion, black_box};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use dexrs::file::{verifier::VerifyPreset, DexFile, DexLocation, Header, InMemoryDexContainer};
 
 fn parse_and_verify_small_file(c: &mut Criterion) {
@@ -57,5 +57,11 @@ macro_rules! parse_strings {
 parse_strings!(parse_strings_lossy, get_utf16_str_lossy);
 parse_strings!(parse_strings, get_utf16_str);
 
-criterion_group!(benches, parse_and_verify_small_file, parse_small_file, parse_strings_lossy, parse_strings);
+criterion_group!(
+    benches,
+    parse_and_verify_small_file,
+    parse_small_file,
+    parse_strings_lossy,
+    parse_strings
+);
 criterion_main!(benches);
